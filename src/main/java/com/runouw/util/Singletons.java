@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.longlinkislong.wrappers;
+package com.runouw.util;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
