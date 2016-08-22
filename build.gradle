@@ -21,10 +21,6 @@ allprojects {
     }
 }
 
-def getProjectVersion(projId) {
-    "${versionUrl}?name=${projId}".toURL().text.trim()
-}
-
 dependencies {            
     compile 'org.slf4j:slf4j-api:1.7.+'
     
