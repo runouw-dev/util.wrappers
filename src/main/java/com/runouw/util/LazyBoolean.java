@@ -8,7 +8,7 @@ package com.runouw.util;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author zmichaels
  */
-public class LazyBoolean implements DeferrableBoolean {
+public class LazyBoolean implements DeferrableBoolean, Supplier<Boolean> {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(LazyBoolean.class);
     
@@ -64,5 +64,10 @@ public class LazyBoolean implements DeferrableBoolean {
     
     public boolean isInitialized() {
         return this.isInitialized;
+    }
+
+    @Override
+    public Boolean get() {
+        return this.getAsBoolean();
     }
 }

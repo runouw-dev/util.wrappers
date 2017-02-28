@@ -8,6 +8,7 @@ package com.runouw.util;
 import java.util.Objects;
 import java.util.function.LongConsumer;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author zmichaels
  */
-public class LazyLong implements DeferrableLong {
+public class LazyLong implements DeferrableLong, Supplier<Long> {
     private static final Logger LOGGER = LoggerFactory.getLogger(LazyLong.class);
     
     private long instance;
@@ -56,5 +57,10 @@ public class LazyLong implements DeferrableLong {
     
     public boolean isInitialized() {
         return this.isInitialized;
+    }
+
+    @Override
+    public Long get() {
+        return this.getAsLong();
     }
 }

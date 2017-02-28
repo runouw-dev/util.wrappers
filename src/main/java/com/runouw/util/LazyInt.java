@@ -8,6 +8,7 @@ package com.runouw.util;
 import java.util.Objects;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author zmichaels
  */
-public class LazyInt implements DeferrableInt {
+public class LazyInt implements DeferrableInt, Supplier<Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LazyInt.class);
 
@@ -63,5 +64,10 @@ public class LazyInt implements DeferrableInt {
         if (this.isInitialized()) {
             isInit.accept(this.instance);
         }
+    }
+
+    @Override
+    public Integer get() {
+        return this.getAsInt();
     }
 }

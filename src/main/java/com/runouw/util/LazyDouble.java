@@ -8,6 +8,7 @@ package com.runouw.util;
 import java.util.Objects;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author zmichaels
  */
-public class LazyDouble implements DeferrableDouble {
+public class LazyDouble implements DeferrableDouble, Supplier<Double> {
     private static final Logger LOGGER = LoggerFactory.getLogger(LazyDouble.class);
     
     private double instance;
@@ -52,6 +53,11 @@ public class LazyDouble implements DeferrableDouble {
         return this.isInitialized
                 ? this.instance
                 : this.restore();
+    }
+
+    @Override
+    public Double get() {
+        return this.getAsDouble();
     }
     
 }
