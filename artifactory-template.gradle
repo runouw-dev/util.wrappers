@@ -185,7 +185,7 @@ task versionDump << {
     def release = new File("$projectDir/build/version.release")
     
     def revHash = getHash()
-    def snapshotVersion = "$revHash-SNAPSHOT"
+    def snapshotVersion = getSnapshot(project.name)
     def releaseVersion = getRelease(project.name)
                                                 
     if (releaseVersion == null) {
