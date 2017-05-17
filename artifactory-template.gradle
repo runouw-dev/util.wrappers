@@ -45,7 +45,7 @@ publishing {
             
             // get version number for outputting to artifactory
             if (build == 'snapshot') {
-                version = "${getHash()}-SNAPSHOT"          
+                version = "${getRelease(project.name)}#${getHash()}-SNAPSHOT"          
             } else if (build == 'release') {
                 version = getRelease(project.name)
             } else {
@@ -115,46 +115,50 @@ def getHash() {
     'git rev-parse --short HEAD'.execute(null, projectDir).text.trim()
 }
 
-def getSnapshot(projectName) {
-    def result = new ProcessBuilder('sqlite3', database, "SELECT hash FROM versioning WHERE library='$projectName'").start().text.trim()
-    
-    return "$result-SNAPSHOT"
+def getSnapshot(projectName) {    
+    if (isJenkins.toBoolean()) {
+        def hash = new ProcessBuilder('sqlite3', database, "SELECT hash FROM versioning WHERE library='$projectName'").start().text.trim()
+        
+        return "${getRelease(projectName)}#$hash-SNAPSHOT"
+    } else {
+        return "http://jenkins.longlinkislong.com/job/$projectName/lastSuccessfulBuild/artifact/build/version.snapshot".toURL().text.trim()
+    }
 }
 
-def getVersion(projectName) {
-    return getVersion(projectName, build)
-}
 
 def getVersion(projectName, buildType) {
-    if (isJenkins.toBoolean()) {
-        if (buildType == 'snapshot') {
-            return getSnapshot(projectName)
-        } else if (buildType == 'release') {
-            return getRelease(projectName)
-        } else {
-            throw new IllegalStateException("Unsupported build type: $buildType")
-        }
+    if (buildType == 'snapshot') {
+        return getSnapshot(projectName)
     } else {
-        if (buildType == 'snapshot') {
-            return "http://jenkins.longlinkislong.com/job/$projectName/lastSuccessfulBuild/artifact/build/version.snapshot".toURL().text.trim()
-        } else if (buildType == 'release') {
-            return "http://jenkins.longlinkislong.com/job/$projectName/lastSuccessfulBuild/artifact/build/version.release".toURL().text.trim()
-        } else {
-            throw new IllegalArgumentException("Unsupported build type: $buildType")
-        }
+        return getRelease(projectName)
     }
 }
 
 def getRelease(projectName) {
-    def version = new ProcessBuilder('sqlite3', database, "SELECT major,minor,revision FROM versioning WHERE library='$projectName'").start().text.trim()
-    
-    if (version.empty) {
-        def dbFile = new File(database).absolutePath
-        System.err.println("Library [$projectName] was not found in database: $dbFile")
-        return null
+    if (isJenkins.toBoolean()) {
+        def version = new ProcessBuilder('sqlite3', database, "SELECT major,minor,revision FROM versioning WHERE library='$projectName'").start().text.trim()
+
+        if (version.empty) {
+            def dbFile = new File(database).absolutePath
+            System.err.println("Library [$projectName] was not found in database: $dbFile")
+            return null
+        } else {
+            return version.replace('|', '.')
+        }
     } else {
-        return version.replace('|', '.')
+        "http://jenkins.longlinkislong.com/job/$projectName/lastSuccessfulBuild/artifact/build/version.release".toURL().text.trim()
     }
+}
+
+// methods to expose to build.gradle
+gradle.allprojects{
+    ext.getVersion = {projectName ->
+        return getVersion(projectName, build)
+    }
+}
+
+task version << {
+    println getVersion(project.name, build)
 }
 
 task versionRelease << {    
@@ -169,7 +173,7 @@ task versionRelease << {
 }
 
 task versionSnapshot << {
-    "${'git rev-parse --short HEAD'.execute(null, projectDir).text}-SNAPSHOT"
+    println getSnapshot(project.name)
 }
 
 task versionDump << {
@@ -196,3 +200,4 @@ task versionDump << {
     snapshot.write snapshotVersion
     release.write releaseVersion
 }
+
